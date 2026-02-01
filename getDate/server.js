@@ -1,29 +1,32 @@
 const http = require("http");
-const url = require("url"); // old parser
+const url = require("url");
 const Utils = require("./modules/utils");
 const locale = require("./lang/en/en");
 
-const utils = new Utils(locale);
-const PORT = 3000;
+class Server {
+  constructor(port) {
+    this.port = port
+    this.utils = new Utils(locale);
+  }
 
-http
-  .createServer((req, res) => {
-    // Old Node style: url.parse(req.url, true) gives pathname + query object
-    const parsed = url.parse(req.url, true);
-    const path = parsed.pathname;
+  start() {
+    const instance = http.createServer((req, res) => { this.onReq(req, res) })
+    instance.listen(this.port);
+  }
 
-    if (path.startsWith("/COMP4537/labs/3/getDate")) {
-      const name = parsed.query.name || "uhhhhhhhhhhhhhhh";
+  onReq(req, res) {
+    const name = url.parse(req.url, true).query.name;
 
-      const html = utils.getDate(name);
+    if (name) {
+      const html = this.utils.getDate(name);
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       return res.end(html);
+    } else {
+      res.writeHead(400, { "Content-Type": "text/html; charset=utf-8" });
+      return res.end(locale.failure);
     }
+  }
 
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Not found");
-  })
-  .listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Test URL: http://localhost:${PORT}/COMP4537/labs/3/getDate/`);
-  });
+}
+
+new Server(80).start()
