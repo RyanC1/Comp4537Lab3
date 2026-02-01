@@ -10,7 +10,8 @@ class Server {
 
     start() {
         const instance = http.createServer((req, res) => { this.onReq(req, res) })
-        instance.listen(this.port);
+        instance.listen(this.port, "0.0.0.0");
+
     }
 
     onReq(req, res) {
@@ -28,5 +29,5 @@ class Server {
 
 }
 
-new Server(80).start()
-
+const PORT = process.env.PORT || 3000;
+new Server(PORT).start();
